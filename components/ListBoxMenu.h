@@ -67,9 +67,6 @@ public:
 
     void resized() override;
 
-    void mouseDown (const juce::MouseEvent& e) override;
-    void mouseUp (const juce::MouseEvent& e) override;
-
     void setMenuFromPopup (juce::PopupMenu& menu, const juce::String rootMenuName = juce::String());
     bool backToParent();
 

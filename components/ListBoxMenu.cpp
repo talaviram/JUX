@@ -232,28 +232,6 @@ void ListBoxMenu::resized()
     list.setBounds (bounds);
 }
 
-void ListBoxMenu::mouseDown (const juce::MouseEvent& e)
-{
-    if (e.getMouseDownY() > list.getDefaultRowHeight()) // header
-    {
-        mouseDownRow = list.getRowContainingPosition (e.getPosition().getX(), e.getPosition().getY());
-        list.repaintRow (mouseDownRow);
-    }
-    if (auto cmp = list.getComponentAt (e.getPosition()))
-        cmp->mouseDown (e);
-}
-
-void ListBoxMenu::mouseUp (const juce::MouseEvent& e)
-{
-    if (e.getMouseDownY() > list.getDefaultRowHeight()) // header
-    {
-        mouseDownRow = -1;
-        list.repaintRow (list.getRowContainingPosition (e.getMouseDownX(), e.getMouseDownY()));
-    }
-    if (auto cmp = list.getComponentAt (e.getMouseDownPosition()))
-        cmp->mouseUp (e);
-}
-
 int ListBoxMenu::getRowHeight (const int rowNumber) const
 {
     if (currentRoot != nullptr)
