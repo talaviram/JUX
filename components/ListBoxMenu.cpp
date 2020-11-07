@@ -318,11 +318,36 @@ Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelecte
     return nullptr;
 }
 
-void ListBoxMenu::listBoxItemClicked (int row, const MouseEvent&)
+void ListBoxMenu::invokeItemEventsIfNeeded (Item& item)
 {
+    if (item.action != nullptr)
+    {
+        MessageManager::callAsync (item.action);
+        return;
+    }
+
+    if (item.customCallback != nullptr)
+        if (! item.customCallback->menuItemTriggered())
+            return;
+
+    if (item.commandManager != nullptr)
+    {
+        ApplicationCommandTarget::InvocationInfo info (item.itemID);
+        info.invocationMethod = ApplicationCommandTarget::InvocationInfo::fromMenu;
+
+        item.commandManager->invoke (info, true);
+    }
+}
+
+void ListBoxMenu::listBoxItemClicked (int row, const MouseEvent& e)
+{
+    if (onSecondaryClick != nullptr && e.mods.isRightButtonDown())
+        return;
+
     auto* item = &(*currentRoot->subMenu)[row];
     if (item->subMenu != nullptr)
     {
+        invokeItemEventsIfNeeded (*item);
         setCurrentRoot (item);
     }
     else
@@ -334,8 +359,7 @@ void ListBoxMenu::listBoxItemClicked (int row, const MouseEvent&)
         }
         lastSelectedRow = row;
         selectedId.setValue (item->itemID);
-        if (item->action)
-            item->action();
+        invokeItemEventsIfNeeded (*item);
         list.repaint();
 
         if (shouldCloseOnItemClick)
@@ -348,7 +372,15 @@ void ListBoxMenu::deleteKeyPressed (int)
     backToParent();
 }
 
-void ListBoxMenu::setMenuFromPopup (juce::PopupMenu& menu, const juce::String rootMenuName)
+void ListBoxMenu::setMenu (std::unique_ptr<Item> menu)
+{
+    rootMenu = std::move (menu);
+    setCurrentRoot (rootMenu.get(), true, false);
+    list.updateContent();
+    list.setDefaultRowHeight (list.getDefaultRowHeight());
+}
+
+void ListBoxMenu::setMenuFromPopup (juce::PopupMenu&& menu, const juce::String rootMenuName)
 {
     rootMenu.reset (new Item());
     rootMenu->text = rootMenuName;
@@ -365,11 +397,22 @@ void ListBoxMenu::setOnRootBackToParent (std::function<void()> func)
         setCurrentRoot (currentRoot, false, false);
 }
 
+void ListBoxMenu::setSsecondaryClickAction (std::function<void (Item&)> func)
+{
+    onSecondaryClick = func;
+}
+
 void ListBoxMenu::setHideHeaderOnParent (const bool shouldHide)
 {
     shouldHideHeaderOnRoot = shouldHide;
-    getToolbar()->setBounds (getToolbar()->getBounds().withHeight (rootMenu.get() != nullptr && rootMenu->parentItem == nullptr && shouldHideHeaderOnRoot ? 0 : list.getDefaultRowHeight()));
+    getToolbar()->setBounds (getToolbar()->getBounds().withHeight (shouldShowHeaderForItem (rootMenu.get()) ? list.getDefaultRowHeight() : 0));
     list.resized();
+}
+
+void ListBoxMenu::setShouldShowHeader (bool isVisible)
+{
+    shouldShowHeader = isVisible;
+    getToolbar()->setBounds (getToolbar()->getBounds().withHeight (shouldShowHeaderForItem (rootMenu.get()) ? list.getDefaultRowHeight() : 0));
 }
 
 bool ListBoxMenu::backToParent()
@@ -391,7 +434,7 @@ void ListBoxMenu::setCurrentRoot (Item* newRoot, const bool shouldAnimate, const
 {
     lastSelectedRow = -1;
     transitionBackground.reset();
-    getToolbar()->setBounds (getToolbar()->getBounds().withHeight (newRoot != nullptr && newRoot->parentItem == nullptr && shouldHideHeaderOnRoot ? 0 : list.getDefaultRowHeight()));
+    getToolbar()->setBounds (getToolbar()->getBounds().withHeight (shouldShowHeaderForItem (newRoot) ? list.getDefaultRowHeight() : 0));
     if (isVisible() && shouldAnimate)
     {
         if (shouldCache)
@@ -430,6 +473,14 @@ void ListBoxMenu::setCurrentRoot (Item* newRoot, const bool shouldAnimate, const
 bool ListBoxMenu::isCurrentRootHasParent() const
 {
     return currentRoot && currentRoot->parentItem;
+}
+
+bool ListBoxMenu::shouldShowHeaderForItem (Item* rootItem)
+{
+    if (shouldShowHeader)
+        return true;
+
+    return rootItem != nullptr && rootItem->parentItem != nullptr && shouldHideHeaderOnRoot;
 }
 
 void ListBoxMenu::changeListenerCallback (ChangeBroadcaster* src)
@@ -533,6 +584,7 @@ bool ListBoxMenu::BackButton::getIsNameVisible() const
 {
     return isNameVisible;
 }
+
 void ListBoxMenu::BackButton::paintButton (Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
     auto bounds = getLocalBounds();
@@ -553,6 +605,15 @@ void ListBoxMenu::BackButton::paintButton (Graphics& g, bool shouldDrawButtonAsH
     }
 }
 
+juce::Rectangle<int> ListBoxMenu::getSelectedBounds() const
+{
+    const auto row = lastSelectedRow;
+    if (row == -1)
+        return Rectangle<int>();
+
+    return list.getRowPosition (row, true);
+}
+
 void ListBoxMenu::RowComponent::paint (juce::Graphics& g)
 {
     auto& item = (*parent->currentRoot->subMenu)[rowNumber];
@@ -561,20 +622,44 @@ void ListBoxMenu::RowComponent::paint (juce::Graphics& g)
         if (item.isSectionHeader)
             getLookAndFeel().drawPopupMenuSectionHeader (g, getLocalBounds(), item.text);
         else
-            getLookAndFeel().drawPopupMenuItem (g, { 0, 0, getWidth(), getHeight() }, item.isSeparator, item.isEnabled, (isRowSelected || isDown) && item.isEnabled, item.isTicked, item.subMenu != nullptr, item.text, item.shortcutKeyDescription, item.image.get(), item.colour.isTransparent() ? nullptr : &item.colour);
+            getLookAndFeel().drawPopupMenuItem (g, { 0, 0, getWidth(), getHeight() }, item.isSeparator, item.isEnabled, (isRowSelected || isDown || isSecondary) && item.isEnabled, item.isTicked, item.subMenu != nullptr, item.text, item.shortcutKeyDescription, item.image.get(), item.colour.isTransparent() ? nullptr : &item.colour);
     }
 }
 
-void ListBoxMenu::RowComponent::mouseDown (const juce::MouseEvent&)
+bool ListBoxMenu::RowComponent::isSecondaryClick (const juce::MouseEvent& e) const
+{
+    bool secondaryOption =
+#if JUCE_MAC
+        e.mods.isCommandDown();
+#else
+        false;
+#endif
+    return ! e.mods.isLeftButtonDown() && (secondaryOption || e.mods.isRightButtonDown());
+}
+
+void ListBoxMenu::RowComponent::mouseDown (const juce::MouseEvent& e)
 {
     isDown = true;
+    // TODO mobile long press;
+    isSecondary = isSecondaryClick (e);
     repaint();
 }
 void ListBoxMenu::RowComponent::mouseUp (const juce::MouseEvent& e)
 {
     isDown = false;
     repaint();
+
     if (contains (e.getPosition()))
-        parent->listBoxItemClicked (rowNumber, e);
+    {
+        if (! isSecondary || parent->onSecondaryClick == nullptr)
+            parent->listBoxItemClicked (rowNumber, e);
+        else if (parent->getCurrentRootItem() != nullptr)
+        {
+            parent->lastSelectedRow = rowNumber;
+            parent->onSecondaryClick (parent->getCurrentRootItem()->subMenu->at (rowNumber));
+            isSecondary = false;
+            repaint();
+        }
+    }
 }
 } // namespace jux

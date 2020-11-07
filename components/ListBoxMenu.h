@@ -67,13 +67,18 @@ public:
 
     void resized() override;
 
-    void setMenuFromPopup (juce::PopupMenu& menu, const juce::String rootMenuName = juce::String());
+    void setMenu (std::unique_ptr<Item>);
+    void setMenuFromPopup (juce::PopupMenu&& menu, const juce::String rootMenuName = juce::String());
     bool backToParent();
 
     // optional function if needed on back of root item.
     void setOnRootBackToParent (std::function<void()> func);
 
+    // Allows setting a right-click (desktop) or long-press (mobile) action.
+    void setSsecondaryClickAction (std::function<void (Item&)> func);
+
     void setHideHeaderOnParent (bool shouldHide);
+    void setShouldShowHeader (bool isVisible);
 
     bool isCurrentRootHasParent() const;
 
@@ -90,6 +95,8 @@ public:
     Component* refreshComponentForRow (int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) override;
     void listBoxItemClicked (int row, const juce::MouseEvent&) override;
     void deleteKeyPressed (int lastRowSelected) override;
+
+    juce::Rectangle<int> getSelectedBounds() const;
 
     struct Item
     {
@@ -210,10 +217,12 @@ public:
 
 private:
     int lastSelectedRow { -1 };
-    int mouseDownRow { -1 };
+
     juce::Value selectedId;
     void updateSelectedId (int newSelection);
     void setCurrentRoot (Item* newRoot, bool shouldAnimate = true, bool shouldCache = true);
+    void invokeItemEventsIfNeeded (Item&);
+    bool shouldShowHeaderForItem (Item* rootItem);
 
     void changeListenerCallback (juce::ChangeBroadcaster*) override;
 
@@ -258,10 +267,14 @@ private:
         void paint (juce::Graphics& g) override;
         void mouseDown (const juce::MouseEvent&) override;
         void mouseUp (const juce::MouseEvent&) override;
+
+        bool isSecondaryClick (const juce::MouseEvent&) const;
+
         ListBoxMenu* parent;
         int rowNumber;
         bool isRowSelected;
         bool isDown;
+        bool isSecondary;
     };
 
     // workaround for ListBox custom component tricky lifecycle
@@ -290,11 +303,13 @@ private:
     std::unique_ptr<ListBoxMenu::Item> convertPopupItem (const juce::PopupMenu::Item&, Item* parent = nullptr);
 
     std::unique_ptr<Item> rootMenu;
-    std::function<void()> onRootBack { nullptr };
+    std::function<void()> onRootBack {};
+    std::function<void (Item&)> onSecondaryClick {};
     Item* currentRoot;
     jux::ListBox list;
     bool shouldCloseOnItemClick { false };
     bool shouldHideHeaderOnRoot { false };
+    bool shouldShowHeader { true };
 
     // simplify this component animation
     std::unique_ptr<juce::ImageComponent> transitionBackground;
