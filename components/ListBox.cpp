@@ -674,9 +674,10 @@ int ListBox::getRowContainingPosition (const int x, const int y) const noexcept
 {
     if (juce::isPositiveAndBelow (x, getWidth()))
     {
-        const int row = (viewport->getViewPositionY() + y - viewport->getY()) / rowHeight;
+        const auto absoluteY = viewport->getViewPositionY() + y;
+        const auto row = *std::lower_bound(itemHeightSum.begin(), itemHeightSum.end(), absoluteY);
 
-        if (juce::isPositiveAndBelow (row, totalItems))
+        if (juce::isPositiveAndBelow (row, itemHeightSum.back()))
             return row;
     }
 
