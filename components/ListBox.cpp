@@ -865,8 +865,10 @@ int ListBox::getRowHeight (const int rowNumber) const noexcept
 
 int ListBox::getNumRowsOnScreen() const noexcept
 {
-    jassertfalse;
-    //    return viewport->getMaximumVisibleHeight() / rowHeight;
+    const auto* vp = getViewport();
+    const auto firstVisibleRowIndex = std::lower_bound (itemHeightSum.begin(), itemHeightSum.end(), vp->getViewPositionY()) - itemHeightSum.begin();
+    const auto lastVisibleRowIndex = std::lower_bound (itemHeightSum.begin(), itemHeightSum.end(), vp->getViewPositionY() + vp->getViewHeight()) - itemHeightSum.begin();
+    return static_cast<int> (lastVisibleRowIndex - firstVisibleRowIndex);
 }
 
 void ListBox::setMinimumContentWidth (const int newMinimumWidth)
