@@ -301,21 +301,55 @@ void ListBoxMenu::paintListBoxItem (int rowNumber, Graphics& g, int width, int h
 
 Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelected, Component* existingComponentToUpdate)
 {
-    if (existingComponentToUpdate)
-        delete existingComponentToUpdate;
-    if (currentRoot && currentRoot->subMenu)
-    {
-        auto& item = (*currentRoot->subMenu)[rowNumber];
-        if (item.customComponent.get())
-            return new CustomComponentWrapper (item.customComponent.get());
+    juce::Component* customComponent = currentRoot && currentRoot->subMenu && (*currentRoot->subMenu)[rowNumber].customComponent ? (*currentRoot->subMenu)[rowNumber].customComponent.get() : nullptr;
 
-        auto c = std::make_unique<RowComponent>();
+    RowComponent* c = nullptr;
+    if (existingComponentToUpdate == nullptr)
+    {
+        if (customComponent)
+        {
+            return new CustomComponentWrapper (customComponent);
+        }
+        c = new RowComponent (*this);
+    }
+    else
+    {
+        if (customComponent)
+        {
+            auto customWrapper = dynamic_cast<CustomComponentWrapper*> (existingComponentToUpdate);
+            if (customWrapper == nullptr)
+            {
+                customWrapper->updateComponent (customComponent);
+            }
+            else
+            {
+                delete existingComponentToUpdate;
+                return new CustomComponentWrapper (customComponent);
+            }
+        }
+        else
+        {
+            c = dynamic_cast<RowComponent*> (existingComponentToUpdate);
+            if (c == nullptr)
+            {
+                delete existingComponentToUpdate;
+                c = new RowComponent (*this);
+            }
+        }
+    }
+
+    if (c != nullptr)
+    {
         c->rowNumber = rowNumber;
         c->isRowSelected = isRowSelected;
         c->parent = this;
-        return c.release();
+        return c;
     }
-    return nullptr;
+
+    if (existingComponentToUpdate != nullptr)
+        jassertfalse;
+
+    return existingComponentToUpdate;
 }
 
 void ListBoxMenu::invokeItemEventsIfNeeded (Item& item)
@@ -614,6 +648,10 @@ juce::Rectangle<int> ListBoxMenu::getSelectedBounds() const
     return list.getRowPosition (row, true);
 }
 
+ListBoxMenu::RowComponent::RowComponent (ListBoxMenu& owner) : owner (owner)
+{
+}
+
 void ListBoxMenu::RowComponent::paint (juce::Graphics& g)
 {
     auto& item = (*parent->currentRoot->subMenu)[rowNumber];
@@ -642,24 +680,35 @@ void ListBoxMenu::RowComponent::mouseDown (const juce::MouseEvent& e)
     isDown = true;
     // TODO mobile long press;
     isSecondary = isSecondaryClick (e);
-    repaint();
 }
 void ListBoxMenu::RowComponent::mouseUp (const juce::MouseEvent& e)
 {
     isDown = false;
     repaint();
-
     if (contains (e.getPosition()))
     {
-        if (! isSecondary || parent->onSecondaryClick == nullptr)
+        if (! isDragging && (! isSecondary || parent->onSecondaryClick != nullptr))
             parent->listBoxItemClicked (rowNumber, e);
         else if (parent->getCurrentRootItem() != nullptr)
         {
             parent->lastSelectedRow = rowNumber;
-            parent->onSecondaryClick (parent->getCurrentRootItem()->subMenu->at (rowNumber));
+            if (isSecondary && parent->onSecondaryClick == nullptr)
+                parent->onSecondaryClick (parent->getCurrentRootItem()->subMenu->at (rowNumber));
             isSecondary = false;
             repaint();
         }
     }
 }
+
+void ListBoxMenu::RowComponent::mouseDrag (const juce::MouseEvent& e)
+{
+    getParentComponent()->mouseDrag (e.getEventRelativeTo (getParentComponent()));
+    isDragging = owner.list.getViewport()->isCurrentlyScrollingOnDrag();
+}
+
+void ListBoxMenu::RowComponent::mouseWheelMove (const juce::MouseEvent& e, const juce::MouseWheelDetails& d)
+{
+    owner.list.mouseWheelMove (e, d);
+}
+
 } // namespace jux

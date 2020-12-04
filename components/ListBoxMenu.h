@@ -216,6 +216,7 @@ public:
     void animateAndClose (bool removeComponent = true);
 
 private:
+    friend class RowComponent;
     int lastSelectedRow { -1 };
 
     juce::Value selectedId;
@@ -264,22 +265,28 @@ private:
     class RowComponent : public juce::Component
     {
     public:
+        RowComponent (ListBoxMenu&);
         void paint (juce::Graphics& g) override;
         void mouseDown (const juce::MouseEvent&) override;
         void mouseUp (const juce::MouseEvent&) override;
+        void mouseDrag (const juce::MouseEvent&) override;
+        void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override;
 
         bool isSecondaryClick (const juce::MouseEvent&) const;
 
         ListBoxMenu* parent;
         int rowNumber;
-        bool isRowSelected;
-        bool isDown;
-        bool isSecondary;
+        bool isRowSelected = false, isDown = false, isSecondary = false, isDragging = false;
+        bool selectRowOnMouseUp;
+
+        ListBoxMenu& owner;
     };
 
     // workaround for ListBox custom component tricky lifecycle
     class CustomComponentWrapper : public Component
     {
+        friend class ListBoxMenu;
+
     public:
         CustomComponentWrapper (Component* componentToWrap) : nonOwnedComponent (componentToWrap)
         {
@@ -294,8 +301,14 @@ private:
         {
             nonOwnedComponent->setBounds (getLocalBounds());
         }
-
     private:
+        void updateComponent (Component* componentToUpdate)
+        {
+            jassert (componentToUpdate != nullptr);
+            nonOwnedComponent = componentToUpdate;
+            addAndMakeVisible (nonOwnedComponent);
+            resized();
+        }
         Component* nonOwnedComponent;
     };
 
