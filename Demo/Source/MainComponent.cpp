@@ -229,7 +229,7 @@ public:
             CallOutBox::launchAsynchronously (std::move (content), openAsCallOut.getBounds(), getParentComponent());
         };
 
-        // JUCE PopUpMenu converted to ListBoxMenu
+        // JUCE PopupMenu converted to ListBoxMenu
         // Can be useful for preset selection or basic popup when
         // clicking should close UI
         jucePopupMenu.addSectionHeader ("Section Header");
@@ -310,9 +310,9 @@ MainComponent::MainComponent()
     addAndMakeVisible (header);
 
     DrawablePath open, closed;
-    open.setPath (jux::ListBoxMenu::getArrowPath ({ 10.0f, 10.0f, 20.0f, 20.0f }, 1, false, Justification::centred));
+    open.setPath (jux::getArrowPath ({ 10.0f, 10.0f, 20.0f, 20.0f }, 1, false, Justification::centred));
     open.replaceColour (Colours::black, Colours::white);
-    closed.setPath (jux::ListBoxMenu::getArrowPath ({ 10.0f, 10.0f, 20.0f, 20.0f }, 2, false, Justification::centred));
+    closed.setPath (jux::getArrowPath ({ 10.0f, 10.0f, 20.0f, 20.0f }, 2, false, Justification::centred));
     closed.replaceColour (Colours::black, Colours::white);
     menuButton.setImages (&open, nullptr, nullptr, nullptr, &closed);
     menuButton.setClickingTogglesState (true);

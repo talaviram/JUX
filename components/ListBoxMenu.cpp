@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2020 Tal Aviram
+    Copyright (c) 2020-2021 Tal Aviram
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -27,51 +27,13 @@
 */
 
 #include "ListBoxMenu.h"
+#include "../utils.h"
 
 using namespace juce;
 
 namespace jux
 {
 typedef std::vector<ListBoxMenu::Item> List;
-
-Path ListBoxMenu::getArrowPath (Rectangle<float> arrowZone, const int direction, bool filled, const Justification justification)
-{
-    auto w = jmin (arrowZone.getWidth(), (direction == 0 || direction == 2) ? 8.0f : filled ? 5.0f : 8.0f);
-    auto h = jmin (arrowZone.getHeight(), (direction == 0 || direction == 2) ? 5.0f : filled ? 8.0f : 5.0f);
-
-    if (justification == Justification::centred)
-    {
-        arrowZone.reduce ((arrowZone.getWidth() - w) / 2, (arrowZone.getHeight() - h) / 2);
-    }
-    else if (justification == Justification::centredRight)
-    {
-        arrowZone.removeFromLeft (arrowZone.getWidth() - w);
-        arrowZone.reduce (0, (arrowZone.getHeight() - h) / 2);
-    }
-    else if (justification == Justification::centredLeft)
-    {
-        arrowZone.removeFromRight (arrowZone.getWidth() - w);
-        arrowZone.reduce (0, (arrowZone.getHeight() - h) / 2);
-    }
-    else
-    {
-        jassertfalse; // currently only supports centred justifications
-    }
-
-    Path path;
-    path.startNewSubPath (arrowZone.getX(), arrowZone.getBottom());
-    path.lineTo (arrowZone.getCentreX(), arrowZone.getY());
-    path.lineTo (arrowZone.getRight(), arrowZone.getBottom());
-
-    if (filled)
-        path.closeSubPath();
-
-    path.applyTransform (AffineTransform::rotation (direction * MathConstants<float>::halfPi,
-                                                    arrowZone.getCentreX(),
-                                                    arrowZone.getCentreY()));
-
-    return path;
-}
 
 ListBoxMenu::Item::Item() = default;
 ListBoxMenu::Item::Item (String t) : text (std::move (t)), itemID (-1) {}
@@ -594,7 +556,6 @@ void ListBoxMenu::ListMenuToolbar::resized()
 
 ListBoxMenu::BackButton::BackButton() : Button ("")
 {
-    getArrowPath = ListBoxMenu::getArrowPath;
     auto& def = LookAndFeel::getDefaultLookAndFeel();
     if (! def.isColourSpecified (ColourIds::arrowColour))
         def.setColour (ColourIds::arrowColour, Colours::white);
@@ -627,7 +588,7 @@ void ListBoxMenu::BackButton::paintButton (Graphics& g, bool shouldDrawButtonAsH
     Colour arrowColour = findColour (shouldDrawButtonAsHighlighted ? ColourIds::arrowColourOver : ColourIds::arrowColour);
     arrowColour = isEnabled() ? arrowColour : arrowColour.darker();
     g.setColour (arrowColour);
-    g.strokePath (getArrowPath (arrow, 3, false, Justification::centred), PathStrokeType (1.0f));
+    g.strokePath (jux::getArrowPath (arrow, 3, false, Justification::centred), PathStrokeType (1.0f));
     if (text.isNotEmpty())
     {
         Font font (bounds.getHeight() - 4);

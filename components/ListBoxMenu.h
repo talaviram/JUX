@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2020 Tal Aviram
+    Copyright (c) 2020-2021 Tal Aviram
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,6 @@ public:
     ListBoxMenu();
 
     ListBoxMenu (std::unique_ptr<Item> rootItemToOwn);
-
-    juce::Path static getArrowPath (juce::Rectangle<float> arrowZone, const int direction, bool filled, const juce::Justification justification);
 
     enum ColourIds
     {
@@ -243,8 +241,6 @@ private:
         bool getIsNameVisible() const;
         void paintButton (juce::Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override;
 
-        std::function<juce::Path (juce::Rectangle<float> arrowZone, const int direction, bool filled, const juce::Justification justification)> getArrowPath;
-
     private:
         bool isNameVisible { true };
         juce::String text { "" };
@@ -301,6 +297,7 @@ private:
         {
             nonOwnedComponent->setBounds (getLocalBounds());
         }
+
     private:
         void updateComponent (Component* componentToUpdate)
         {

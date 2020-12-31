@@ -3,7 +3,7 @@
 
     MIT License
 
-    Copyright (c) 2020 Tal Aviram
+    Copyright (c) 2020-2021 Tal Aviram
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -675,7 +675,7 @@ int ListBox::getRowContainingPosition (const int x, const int y) const noexcept
     if (juce::isPositiveAndBelow (x, getWidth()))
     {
         const auto absoluteY = viewport->getViewPositionY() + y;
-        const auto row = *std::lower_bound(itemHeightSum.begin(), itemHeightSum.end(), absoluteY);
+        const auto row = *std::lower_bound (itemHeightSum.begin(), itemHeightSum.end(), absoluteY);
 
         if (juce::isPositiveAndBelow (row, itemHeightSum.back()))
             return row;
