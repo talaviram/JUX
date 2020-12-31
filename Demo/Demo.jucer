@@ -10,6 +10,8 @@
         <FILE id="Itdr12" name="ListBoxMenu.cpp" compile="1" resource="0" file="../components/ListBoxMenu.cpp"/>
         <FILE id="NdQrLr" name="ListBoxMenu.h" compile="0" resource="0" file="../components/ListBoxMenu.h"/>
         <FILE id="gzVDVx" name="SwitchButton.h" compile="0" resource="0" file="../components/SwitchButton.h"/>
+        <FILE id="dmB7Lh" name="TabBar.cpp" compile="1" resource="0" file="../components/TabBar.cpp"/>
+        <FILE id="SnWfBQ" name="TabBar.h" compile="0" resource="0" file="../components/TabBar.h"/>
       </GROUP>
       <FILE id="Xr0Vbf" name="utils.h" compile="0" resource="0" file="../utils.h"/>
     </GROUP>

@@ -31,6 +31,7 @@
 #include "../../components/ListBox.h"
 #include "../../components/ListBoxMenu.h"
 #include "../../components/SwitchButton.h"
+#include "../../components/TabBar.h"
 
 using namespace juce;
 
@@ -38,7 +39,8 @@ enum class MenuOptions
 {
     SwitchButtonDemo,
     ListBoxDemo,
-    ListBoxMenuDemo
+    ListBoxMenuDemo,
+    TabBarDemo
 };
 template <typename E>
 constexpr typename std::underlying_type<E>::type enumAsInt (E e, bool nonZero = false) noexcept
@@ -61,6 +63,7 @@ public:
         menu.addItem (enumAsInt (MenuOptions::SwitchButtonDemo, true), "jux::SwitchButton");
         menu.addItem (enumAsInt (MenuOptions::ListBoxDemo, true), "jux::ListBox");
         menu.addItem (enumAsInt (MenuOptions::ListBoxMenuDemo, true), "jux::ListBoxMenu");
+        menu.addItem (enumAsInt (MenuOptions::TabBarDemo, true), "jux::TabBar");
         return menu;
     }
 
@@ -78,6 +81,9 @@ public:
                 break;
             case enumAsInt (MenuOptions::ListBoxMenuDemo, true):
                 cmp = owner->getComponent (enumAsInt (MenuOptions::ListBoxMenuDemo));
+                break;
+            case enumAsInt (MenuOptions::TabBarDemo, true):
+                cmp = owner->getComponent (enumAsInt (MenuOptions::TabBarDemo));
                 break;
             default:
                 return;
@@ -301,6 +307,44 @@ public:
     bool isInteractive { false };
 };
 
+struct TabBarDemo : public Component
+{
+    TabBarDemo()
+    {
+        tabBar.addTab ("Tab 1");
+        tabBar.addTab ("Tab 2");
+        tabBar.addTab ("Tab 3");
+
+        tabBar.onTabSelected = [this] (int id) {
+            mockupTab.setText ("Tab " + String (++id), dontSendNotification);
+            //                    mockupTab.setColour (Label::textColourId, juce::Colours::)
+        };
+
+        tabBar.onTabClosed = [this] (int id) {
+            tabBar.removeTab (id);
+        };
+
+        addAndMakeVisible (tabBar);
+        mockupTab.setText ("Tab 1", dontSendNotification);
+        addAndMakeVisible (mockupTab);
+    }
+
+    void resized() override
+    {
+        auto bounds = getLocalBounds();
+        tabBar.setBounds (bounds.removeFromTop (40));
+        mockupTab.setBounds (bounds);
+    }
+
+    void paint (Graphics& g) override
+    {
+        g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
+    }
+
+    jux::TabBar tabBar;
+    juce::Label mockupTab;
+};
+
 //==============================================================================
 MainComponent::MainComponent()
     : sidePanel ("JUX", 400, true), menuButton ("Menu", DrawableButton::ImageRaw)
@@ -325,6 +369,8 @@ MainComponent::MainComponent()
     mainArea.addChildComponent (components[enumAsInt (MenuOptions::ListBoxDemo)].get());
     components.push_back (std::unique_ptr<Component> (new ListBoxMenuDemo()));
     mainArea.addChildComponent (components[enumAsInt (MenuOptions::ListBoxMenuDemo)].get());
+    components.push_back (std::unique_ptr<Component> (new TabBarDemo()));
+    mainArea.addChildComponent (components[enumAsInt (MenuOptions::TabBarDemo)].get());
 
     auto side = std::make_unique<BurgerMenuComponent>();
     demoMenu.owner = this;
