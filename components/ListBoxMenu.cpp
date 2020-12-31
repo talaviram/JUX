@@ -317,7 +317,7 @@ Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelecte
         if (customComponent)
         {
             auto customWrapper = dynamic_cast<CustomComponentWrapper*> (existingComponentToUpdate);
-            if (customWrapper == nullptr)
+            if (customWrapper != nullptr)
             {
                 customWrapper->updateComponent (customComponent);
             }

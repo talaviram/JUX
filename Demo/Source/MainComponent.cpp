@@ -218,15 +218,15 @@ public:
         };
 
         openAsCallOut.onClick = [this] {
-            auto* content = new jux::ListBoxMenu();
+            auto content = std::make_unique<jux::ListBoxMenu>();
             PopupMenu menu;
             for (auto i = 0; i < 20; i++)
                 menu.addItem ("Item " + String (i), nullptr);
-            content->setMenuFromPopup (menu);
+            content->setMenuFromPopup (std::move (menu));
             content->setSize (300, 300);
             content->setHideHeaderOnParent (true);
             content->setShouldCloseOnItemClick (true);
-            CallOutBox::launchAsynchronously (content, openAsCallOut.getBounds(), getParentComponent());
+            CallOutBox::launchAsynchronously (std::move (content), openAsCallOut.getBounds(), getParentComponent());
         };
 
         // JUCE PopUpMenu converted to ListBoxMenu
@@ -262,8 +262,9 @@ public:
 
     void setupListBoxMenuFromPopup()
     {
+        auto menu = jucePopupMenu;
         listBoxMenu = std::make_unique<jux::ListBoxMenu>();
-        listBoxMenu->setMenuFromPopup (jucePopupMenu);
+        listBoxMenu->setMenuFromPopup (std::move (jucePopupMenu));
         listBoxMenu->setShouldCloseOnItemClick (! isInteractive);
 
         listBoxMenu->setBackButtonShowText (true);
