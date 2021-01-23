@@ -167,9 +167,9 @@ ListBoxMenu::Item&& ListBoxMenu::Item::setImage (std::unique_ptr<Drawable> newIm
 
 ListBoxMenu::ListBoxMenu() : lastSelectedRow (-1), currentRoot (nullptr)
 {
-    addDefaultColourIdIfNotSet (ColourIds::backgroundColour, Colours::darkgrey);
-    addDefaultColourIdIfNotSet (ColourIds::headerBackgroundColour, Colours::black.withAlpha (0.7f));
-    addDefaultColourIdIfNotSet (ListBox::ColourIds::backgroundColourId, findColour (ColourIds::backgroundColour));
+    jux::addDefaultColourIdIfNotSet (ColourIds::backgroundColour, Colours::darkgrey);
+    jux::addDefaultColourIdIfNotSet (ColourIds::headerBackgroundColour, Colours::black.withAlpha (0.7f));
+    jux::addDefaultColourIdIfNotSet (ListBox::ColourIds::backgroundColourId, findColour (ColourIds::backgroundColour));
     list.setMouseMoveSelectsRows (false);
     list.setModel (this);
     list.setHeaderComponent (std::unique_ptr<Component> (new ListBoxMenu::ListMenuToolbar()));

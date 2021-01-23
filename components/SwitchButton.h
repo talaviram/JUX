@@ -54,9 +54,9 @@ public:
     SwitchButton (juce::String name, bool isInverted)
         : Button ("SwitchButton"), isInverted (isInverted)
     {
-        addDefaultColourIdIfNotSet (switchColour, juce::Colours::white);
-        addDefaultColourIdIfNotSet (switchOffBackgroundColour, juce::Colours::darkgrey);
-        addDefaultColourIdIfNotSet (switchOnBackgroundColour, juce::Colours::limegreen);
+        jux::addDefaultColourIdIfNotSet (switchColour, juce::Colours::white);
+        jux::addDefaultColourIdIfNotSet (switchOffBackgroundColour, juce::Colours::darkgrey);
+        jux::addDefaultColourIdIfNotSet (switchOnBackgroundColour, juce::Colours::limegreen);
         setClickingTogglesState (true);
         addAndMakeVisible (switchCircle);
         switchCircle.setWantsKeyboardFocus (false);
