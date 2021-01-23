@@ -10,7 +10,7 @@
 
 namespace jux
 {
-static juce::Path getArrowPath (juce::Rectangle<float> arrowZone, const int direction, bool filled, const juce::Justification justification)
+[[maybe_unused]] static juce::Path getArrowPath (juce::Rectangle<float> arrowZone, const int direction, bool filled, const juce::Justification justification)
 {
     auto w = std::min<float> (arrowZone.getWidth(), (direction == 0 || direction == 2) ? 8.0f : filled ? 5.0f : 8.0f);
     auto h = std::min<float> (arrowZone.getHeight(), (direction == 0 || direction == 2) ? 5.0f : filled ? 8.0f : 5.0f);
@@ -49,7 +49,7 @@ static juce::Path getArrowPath (juce::Rectangle<float> arrowZone, const int dire
     return path;
 }
 
-static bool addDefaultColourIdIfNotSet (int colourId, juce::Colour defaultColourToSet)
+[[maybe_unused]] static bool addDefaultColourIdIfNotSet (int colourId, juce::Colour defaultColourToSet)
 {
     auto& def = juce::LookAndFeel::getDefaultLookAndFeel();
     if (! def.isColourSpecified (colourId))
