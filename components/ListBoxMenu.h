@@ -307,6 +307,8 @@ private:
             resized();
         }
         Component* nonOwnedComponent;
+
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CustomComponentWrapper)
     };
 
     std::unique_ptr<Item::List> convertPopupMenuToList (const juce::PopupMenu& source, ListBoxMenu::Item* parent = nullptr);

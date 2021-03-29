@@ -285,7 +285,6 @@ Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelecte
             }
             else
             {
-                delete existingComponentToUpdate;
                 return new CustomComponentWrapper (customComponent);
             }
         }
