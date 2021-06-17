@@ -52,6 +52,9 @@ public:
 
         if (auto* m = owner.getModel())
         {
+            if (newRow > m->getNumRows())
+                return;
+
             setMouseCursor (m->getMouseCursorForRow (row));
 
             customComponent.reset (m->refreshComponentForRow (newRow, nowSelected, customComponent.release()));
