@@ -315,6 +315,9 @@ Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelecte
 
 void ListBoxMenu::invokeItemEventsIfNeeded (Item& item)
 {
+    if (! item.isEnabled)
+        return;
+
     if (item.action != nullptr)
     {
         MessageManager::callAsync (item.action);
@@ -340,6 +343,9 @@ void ListBoxMenu::listBoxItemClicked (int row, const MouseEvent& e)
         return;
 
     auto* item = &(*currentRoot->subMenu)[row];
+    if (item && ! item->isEnabled)
+        return;
+
     if (item->subMenu != nullptr)
     {
         invokeItemEventsIfNeeded (*item);
