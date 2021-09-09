@@ -643,6 +643,7 @@ bool ListBoxMenu::RowComponent::isSecondaryClick (const juce::MouseEvent& e) con
 
 void ListBoxMenu::RowComponent::mouseDown (const juce::MouseEvent& e)
 {
+    isDragging = false;
     isDown = true;
     // TODO mobile long press;
     isSecondary = isSecondaryClick (e);
