@@ -96,6 +96,14 @@ public:
     */
     virtual int getRowHeight (int rowNumber) const;
 
+    /** This can be overridden to return a name for the specified row.
+
+        By default this will just return a string containing the row number.
+    */
+    virtual juce::String getNameForRow (int rowNumber);
+
+
+
     /** This can be overridden to react to the user clicking on a row.
         @see listBoxItemDoubleClicked
     */
@@ -545,7 +553,7 @@ public:
 
         @see Component::createComponentSnapshot
     */
-    virtual juce::Image createSnapshotOfRows (const juce::SparseSet<int>& rows, int& x, int& y);
+    virtual juce::ScaledImage createSnapshotOfRows (const juce::SparseSet<int>& rows, int& x, int& y);
 
     /** Returns the viewport that this ListBox uses.
 
@@ -594,6 +602,9 @@ private:
     std::vector<int> itemHeightSum {};
     int lastRowSelected = -1;
     bool multipleSelection = false, alwaysFlipSelection = false, hasDoneInitialUpdate = false, selectOnMouseDown = true;
+
+    std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
+    bool hasAccessibleHeaderComponent() const;
 
     void selectRowInternal (int rowNumber, bool dontScrollToShowThisRow, bool deselectOthersFirst, bool isMouseClick);
 
