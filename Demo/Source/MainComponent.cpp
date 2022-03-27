@@ -204,7 +204,7 @@ public:
         addAndMakeVisible (openAsCallOut);
 
         openAsPopup.onClick = [this] {
-            jucePopupMenu.showAt (&openAsPopup);
+            jucePopupMenu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (openAsPopup));
         };
 
         openAsListBoxMenu.onClick = [this] {
@@ -263,7 +263,7 @@ public:
             subMenu.addColouredItem (200 + i, "Sub " + String (i), Colour (static_cast<uint32> (Random().nextInt())), true, false, nullptr);
         jucePopupMenu.addSubMenu ("SubMenu", subMenu);
         jucePopupMenu.addSeparator();
-        jucePopupMenu.addCustomItem (400, std::make_unique<CustomTextEditor>());
+        jucePopupMenu.addCustomItem (400, std::make_unique<CustomTextEditor>(), nullptr, "Custom Item Example");
     }
 
     void setupListBoxMenuFromPopup()
