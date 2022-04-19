@@ -340,7 +340,12 @@ void ListBoxMenu::invokeItemEventsIfNeeded (Item& item)
 
 void ListBoxMenu::listBoxItemClicked (int row, const MouseEvent& e)
 {
-    if (onSecondaryClick != nullptr && e.mods.isRightButtonDown())
+    listBoxItemClicked (row, e.mods.isRightButtonDown());
+}
+
+void ListBoxMenu::listBoxItemClicked (int row, const bool isSecondaryClick)
+{
+    if (onSecondaryClick != nullptr && isSecondaryClick)
         return;
 
     auto* item = &(*currentRoot->subMenu)[row];
@@ -656,7 +661,7 @@ void ListBoxMenu::RowComponent::mouseUp (const juce::MouseEvent& e)
     if (contains (e.getPosition()))
     {
         if (! isDragging && (! isSecondary || parent->onSecondaryClick != nullptr))
-            parent->listBoxItemClicked (rowNumber, e);
+            parent->listBoxItemClicked (rowNumber, e.mods.isRightButtonDown());
         else if (parent->getCurrentRootItem() != nullptr)
         {
             parent->lastSelectedRow = rowNumber;

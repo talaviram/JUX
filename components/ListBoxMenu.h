@@ -92,6 +92,7 @@ public:
     void paintListBoxItem (int rowNumber, juce::Graphics& g, int width, int height, bool rowIsSelected) override;
     Component* refreshComponentForRow (int rowNumber, bool isRowSelected, Component* existingComponentToUpdate) override;
     void listBoxItemClicked (int row, const juce::MouseEvent&) override;
+    void listBoxItemClicked (int row, bool isSecondaryClick);
     void deleteKeyPressed (int lastRowSelected) override;
 
     juce::Rectangle<int> getSelectedBounds() const;
