@@ -33,6 +33,7 @@
 
 namespace jux
 {
+
 //==============================================================================
 /**
 
@@ -216,6 +217,7 @@ public:
 
 private:
     friend class RowComponent;
+    friend class RowAccessibilityHandler;
     int lastSelectedRow { -1 };
 
     juce::Value selectedId;
@@ -269,7 +271,11 @@ private:
         void mouseDrag (const juce::MouseEvent&) override;
         void mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetails&) override;
 
+        std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
+
         bool isSecondaryClick (const juce::MouseEvent&) const;
+
+        juce::AccessibilityActions getItemAccessibilityActions();
 
         ListBoxMenu* parent;
         int rowNumber;
@@ -277,6 +283,7 @@ private:
         bool selectRowOnMouseUp;
 
         ListBoxMenu& owner;
+        friend class RowAccessibilityHandler;
     };
 
     // workaround for ListBox custom component tricky lifecycle

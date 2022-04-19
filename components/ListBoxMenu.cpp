@@ -545,6 +545,7 @@ ListBoxMenu::ListMenuToolbar* ListBoxMenu::getToolbar()
 
 ListBoxMenu::ListMenuToolbar::ListMenuToolbar()
 {
+    setFocusContainerType (FocusContainerType::focusContainer);
     title.setJustificationType (Justification::centred);
     addAndMakeVisible (backButton);
     addAndMakeVisible (title);
@@ -565,7 +566,7 @@ void ListBoxMenu::ListMenuToolbar::resized()
     bounds.removeFromRight (bounds.getHeight());
 }
 
-ListBoxMenu::BackButton::BackButton() : Button ("")
+ListBoxMenu::BackButton::BackButton() : Button ("Back Button")
 {
     auto& def = LookAndFeel::getDefaultLookAndFeel();
     if (! def.isColourSpecified (ColourIds::arrowColour))
@@ -581,6 +582,7 @@ ListBoxMenu::BackButton::BackButton() : Button ("")
 void ListBoxMenu::BackButton::setText (String newText)
 {
     text = newText;
+    setTitle (getName() + (getIsNameVisible() ? newText : ""));
 }
 void ListBoxMenu::BackButton::setIsNameVisible (bool isVisible)
 {
@@ -622,6 +624,108 @@ juce::Rectangle<int> ListBoxMenu::getSelectedBounds() const
 
 ListBoxMenu::RowComponent::RowComponent (ListBoxMenu& owner) : owner (owner)
 {
+}
+
+juce::AccessibilityActions ListBoxMenu::RowComponent::getItemAccessibilityActions()
+{
+    auto& parent = owner;
+    auto& list = owner.list;
+    auto row = rowNumber;
+
+    auto onFocus = [row, &list]
+    {
+        list.scrollToEnsureRowIsOnscreen (row);
+        list.selectRow (row);
+    };
+
+    auto onPressOrToggle = [row, &parent, onFocus]
+    {
+        onFocus();
+        parent.listBoxItemClicked (row, false);
+    };
+
+    return juce::AccessibilityActions().addAction (juce::AccessibilityActionType::focus, std::move (onFocus)).addAction (juce::AccessibilityActionType::press, onPressOrToggle).addAction (juce::AccessibilityActionType::toggle, onPressOrToggle);
+}
+
+class RowAccessibilityHandler : public juce::AccessibilityHandler
+{
+public:
+    explicit RowAccessibilityHandler (ListBoxMenu::RowComponent& rowComponentToWrap)
+        : juce::AccessibilityHandler (rowComponentToWrap,
+                                      juce::AccessibilityRole::listItem,
+                                      rowComponentToWrap.getItemAccessibilityActions(),
+                                      { std::make_unique<RowCellInterface> (*this) }),
+          rowComponent (rowComponentToWrap)
+    {
+    }
+
+    juce::String getTitle() const override
+    {
+        if (auto* m = rowComponent.parent->currentRoot->subMenu.get())
+        {
+            return (*m)[rowComponent.rowNumber].text;
+        }
+
+        return {};
+    }
+
+    juce::AccessibleState getCurrentState() const override
+    {
+        if (auto* m = rowComponent.parent->list.getModel())
+            if (rowComponent.rowNumber >= m->getNumRows())
+                return juce::AccessibleState().withIgnored();
+
+        auto state = AccessibilityHandler::getCurrentState().withAccessibleOffscreen();
+        if (auto* m = rowComponent.parent->currentRoot->subMenu.get())
+        {
+            auto& item = (*m)[rowComponent.rowNumber];
+            if (item.isEnabled)
+            {
+                state = state.withSelectable();
+            }
+            if (rowComponent.isRowSelected)
+                state = state.withSelected();
+        }
+        return state;
+    }
+
+    int getRow() const
+    {
+        return rowComponent.rowNumber;
+    }
+
+private:
+    class RowCellInterface : public juce::AccessibilityCellInterface
+    {
+    public:
+        explicit RowCellInterface (RowAccessibilityHandler& h) : handler (h) {}
+
+        int getColumnIndex() const override { return 0; }
+        int getColumnSpan() const override { return 1; }
+
+        int getRowIndex() const override
+        {
+            return handler.getRow();
+        }
+
+        int getRowSpan() const override { return 1; }
+
+        int getDisclosureLevel() const override { return 0; }
+
+        const AccessibilityHandler* getTableHandler() const override
+        {
+            return handler.rowComponent.owner.getAccessibilityHandler();
+        }
+
+    private:
+        RowAccessibilityHandler& handler;
+    };
+    ListBoxMenu::RowComponent& rowComponent;
+};
+
+std::unique_ptr<juce::AccessibilityHandler> ListBoxMenu::RowComponent::createAccessibilityHandler()
+{
+    return std::make_unique<RowAccessibilityHandler> (*this);
 }
 
 void ListBoxMenu::RowComponent::paint (juce::Graphics& g)
