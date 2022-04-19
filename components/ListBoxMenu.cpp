@@ -282,6 +282,7 @@ Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelecte
             if (customWrapper != nullptr)
             {
                 customWrapper->updateComponent (customComponent);
+                return customWrapper;
             }
             else
             {
