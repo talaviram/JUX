@@ -757,6 +757,7 @@ void ListBoxMenu::RowComponent::mouseDown (const juce::MouseEvent& e)
     isDown = true;
     // TODO mobile long press;
     isSecondary = isSecondaryClick (e);
+    repaint();
 }
 void ListBoxMenu::RowComponent::mouseUp (const juce::MouseEvent& e)
 {
