@@ -264,9 +264,19 @@ void ListBoxMenu::paintListBoxItem (int rowNumber, Graphics& g, int width, int h
     // we use custom component to capture mouse events
 }
 
+juce::Component* ListBoxMenu::getCustomComponentIfValid (int rowNumber)
+{
+    if (currentRoot == nullptr || currentRoot->subMenu == nullptr)
+        return nullptr;
+    if (rowNumber >= currentRoot->subMenu->size())
+        return nullptr;
+
+    return (*currentRoot->subMenu)[rowNumber].customComponent.get();
+}
+
 Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelected, Component* existingComponentToUpdate)
 {
-    juce::Component* customComponent = currentRoot && currentRoot->subMenu && (*currentRoot->subMenu)[rowNumber].customComponent ? (*currentRoot->subMenu)[rowNumber].customComponent.get() : nullptr;
+    juce::Component* customComponent = getCustomComponentIfValid (rowNumber);
 
     RowComponent* c = nullptr;
     if (existingComponentToUpdate == nullptr)

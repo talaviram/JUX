@@ -221,6 +221,7 @@ private:
     friend class RowAccessibilityHandler;
     int lastSelectedRow { -1 };
 
+    juce::Component* getCustomComponentIfValid (int rowNumber);
     juce::Value selectedId;
     void updateSelectedId (int newSelection);
     void setCurrentRoot (Item* newRoot, bool shouldAnimate = true, bool shouldCache = true);
