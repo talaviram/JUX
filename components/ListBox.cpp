@@ -301,15 +301,11 @@ public:
 
     RowComponent* getComponentForRow (int row) const noexcept
     {
-        if (juce::isPositiveAndBelow (row, rows.size()))
-            return rows[row];
+        const auto circularRow = row % std::max<int> (1, rows.size());
+        if (juce::isPositiveAndBelow (circularRow, rows.size()))
+            return rows[circularRow];
 
         return nullptr;
-    }
-
-    RowComponent* getComponentForRowWrapped (int row) const noexcept
-    {
-        return rows[row % std::max<size_t> (1, rows.size())];
     }
 
     RowComponent* getComponentForRowIfOnscreen (const int row) const noexcept
