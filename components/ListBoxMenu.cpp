@@ -404,7 +404,7 @@ void ListBoxMenu::setOnRootBackToParent (std::function<void()> func)
         setCurrentRoot (currentRoot, false, false);
 }
 
-void ListBoxMenu::setSsecondaryClickAction (std::function<void (Item&)> func)
+void ListBoxMenu::setSecondaryClickAction (std::function<void (Item&)> func)
 {
     onSecondaryClick = func;
 }

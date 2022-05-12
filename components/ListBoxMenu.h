@@ -74,7 +74,7 @@ public:
     void setOnRootBackToParent (std::function<void()> func);
 
     // Allows setting a right-click (desktop) or long-press (mobile) action.
-    void setSsecondaryClickAction (std::function<void (Item&)> func);
+    void setSecondaryClickAction (std::function<void (Item&)> func);
 
     void setHideHeaderOnParent (bool shouldHide);
     void setShouldShowHeader (bool isVisible);
