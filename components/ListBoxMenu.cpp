@@ -228,9 +228,10 @@ int ListBoxMenu::getNumRows()
     return val;
 }
 
-void ListBoxMenu::setShouldCloseOnItemClick (const bool shouldClose)
+void ListBoxMenu::setShouldCloseOnItemClick (const bool shouldClose, std::function<void()> onMenuClosed)
 {
     shouldCloseOnItemClick = shouldClose;
+    onMenuClose = onMenuClosed;
 }
 
 void ListBoxMenu::setBackButtonShowText (bool showText)
@@ -254,6 +255,8 @@ void ListBoxMenu::animateAndClose (const bool removeComponent)
         if (cob != nullptr)
             cob->dismiss();
     }
+    if (onMenuClose)
+        onMenuClose();
 }
 
 void ListBoxMenu::paintListBoxItem (int rowNumber, Graphics& g, int width, int height, bool rowIsSelected)

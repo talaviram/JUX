@@ -85,8 +85,9 @@ public:
     int getRowHeight (int rowNumber) const override;
 
     /** When set to true, close and remove the ListBoxMenu component.
+        @param onMenuClosed - allows additional callback on close (useful when menu is within another object that is affected by ListBoxMenu visibility.
          */
-    void setShouldCloseOnItemClick (bool shouldClose);
+    void setShouldCloseOnItemClick (bool shouldClose, std::function<void()> onMenuClosed = nullptr);
     void setBackButtonShowText (bool showText);
 
     int getNumRows() override;
@@ -325,6 +326,7 @@ private:
     std::unique_ptr<Item> rootMenu;
     std::function<void()> onRootBack {};
     std::function<void (Item&)> onSecondaryClick {};
+    std::function<void()> onMenuClose {};
     Item* currentRoot;
     jux::ListBox list;
     bool shouldCloseOnItemClick { false };
