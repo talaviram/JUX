@@ -175,6 +175,15 @@ public:
 
     /** You can override this to return a custom mouse cursor for each row. */
     virtual juce::MouseCursor getMouseCursorForRow (int row);
+
+private:
+#if ! JUCE_DISABLE_ASSERTIONS
+    friend class ListBox;
+    struct Empty
+    {
+    };
+    std::shared_ptr<Empty> sharedState = std::make_shared<Empty>();
+#endif
 };
 
 //==============================================================================
@@ -199,6 +208,11 @@ public:
 
         The model pointer passed-in can be null, in which case you can set it later
         with setModel().
+
+        The ListBoxModel instance must stay alive for as long as the ListBox
+        holds a pointer to it. Be careful to destroy the ListBox before the
+        ListBoxModel, or to call ListBox::setModel (nullptr) before destroying
+        the ListBoxModel.
     */
     ListBox (const juce::String& componentName = juce::String(),
              ListBoxModel* model = nullptr);
@@ -211,7 +225,14 @@ public:
     void setModel (ListBoxModel* newModel);
 
     /** Returns the current list model. */
-    ListBoxModel* getModel() const noexcept { return model; }
+    ListBoxModel* getModel() const noexcept
+    {
+#if ! JUCE_DISABLE_ASSERTIONS
+        checkModelPtrIsValid();
+#endif
+
+        return model;
+    }
 
     //==============================================================================
     /** Causes the list to refresh its content.
@@ -443,7 +464,7 @@ public:
     /** Returns the row number that the given component represents.
         If the component isn't one of the list's rows, this will return -1.
     */
-    int getRowNumberOfComponent (Component* rowComponent) const noexcept;
+    int getRowNumberOfComponent (const juce::Component* const rowComponent) const noexcept;
 
     /** Returns the width of a row (which may be less than the width of this component
         if there's a scrollbar).
@@ -592,7 +613,7 @@ private:
     class RowComponent;
     friend class ListViewport;
     friend class TableListBox;
-    ListBoxModel* model;
+    ListBoxModel* model = nullptr;
     std::unique_ptr<ListViewport> viewport;
     std::unique_ptr<Component> headerComponent;
     std::unique_ptr<MouseListener> mouseMoveSelector;
@@ -603,6 +624,12 @@ private:
     int lastRowSelected = -1;
     bool multipleSelection = false, alwaysFlipSelection = false, hasDoneInitialUpdate = false, selectOnMouseDown = true;
 
+#if ! JUCE_DISABLE_ASSERTIONS
+    std::weak_ptr<ListBoxModel::Empty> weakModelPtr;
+#endif
+
+    void assignModelPtr (ListBoxModel*);
+    void checkModelPtrIsValid() const;
     std::unique_ptr<juce::AccessibilityHandler> createAccessibilityHandler() override;
     bool hasAccessibleHeaderComponent() const;
 

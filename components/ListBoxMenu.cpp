@@ -713,16 +713,6 @@ private:
     public:
         explicit RowCellInterface (RowAccessibilityHandler& h) : handler (h) {}
 
-        int getColumnIndex() const override { return 0; }
-        int getColumnSpan() const override { return 1; }
-
-        int getRowIndex() const override
-        {
-            return handler.getRow();
-        }
-
-        int getRowSpan() const override { return 1; }
-
         int getDisclosureLevel() const override { return 0; }
 
         const AccessibilityHandler* getTableHandler() const override
