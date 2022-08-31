@@ -32,6 +32,7 @@
 
 namespace jux
 {
+class ListBox;
 //==============================================================================
 /**
     A subclass of this is used to drive a ListBox.
