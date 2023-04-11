@@ -169,6 +169,11 @@ public:
     */
     virtual juce::var getDragSourceDescription (const juce::SparseSet<int>& rowsToDescribe);
 
+    /** Called when starting a drag operation on a list row to determine whether the item may be
+        dragged to other windows. Returns true by default.
+    */
+    virtual bool mayDragToExternalWindows() const   { return true; }
+
     /** You can override this to provide tool tips for specific rows.
         @see TooltipClient
     */
@@ -222,7 +227,13 @@ public:
     ~ListBox() override;
 
     //==============================================================================
-    /** Changes the current data model to display. */
+    /** Changes the current data model to display.
+
+        The ListBoxModel instance must stay alive for as long as the ListBox
+        holds a pointer to it. Be careful to destroy the ListBox before the
+        ListBoxModel, or to call ListBox::setModel (nullptr) before destroying
+        the ListBoxModel.
+    */
     void setModel (ListBoxModel* newModel);
 
     /** Returns the current list model. */
@@ -270,6 +281,11 @@ public:
         By default this is true, but you may want to turn it off.
     */
     void setRowSelectedOnMouseDown (bool isSelectedOnMouseDown) noexcept;
+
+    /** Gets whether a row should be selected when the mouse is pressed or released.
+        By default this is true, but you may want to turn it off.
+    */
+    bool getRowSelectedOnMouseDown() const                  { return selectOnMouseDown; }
 
     /** Makes the list react to mouse moves by selecting the row that the mouse if over.
 

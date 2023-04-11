@@ -299,7 +299,7 @@ private:
             jassert (nonOwnedComponent != nullptr);
             addAndMakeVisible (nonOwnedComponent);
         }
-        ~CustomComponentWrapper()
+        ~CustomComponentWrapper() override
         {
             removeChildComponent (nonOwnedComponent);
         }
