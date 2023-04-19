@@ -338,7 +338,7 @@ public:
 
     RowComponent* getComponentForRow (int row) const noexcept
     {
-        const auto circularRow = row % std::max<size_t> (1, rows.size());
+        const auto circularRow = (unsigned long int)row % std::max<size_t> (1, rows.size());
         if (juce::isPositiveAndBelow (circularRow, rows.size()))
             return rows[circularRow].get();
 
@@ -348,7 +348,7 @@ public:
     RowComponent* getComponentForRowIfOnscreen (const int row) const noexcept
     {
         const auto startIndex = getIndexOfFirstVisibleRow();
-        return (row >= startIndex && row < startIndex + rows.size())
+        return (row >= startIndex && row < startIndex + static_cast<int>(rows.size()))
                    ? getComponentForRow (row)
                    : nullptr;
     }
