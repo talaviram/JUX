@@ -338,7 +338,7 @@ public:
 
     RowComponent* getComponentForRow (int row) const noexcept
     {
-        const auto circularRow = (unsigned long int)row % std::max<size_t> (1, rows.size());
+        const auto circularRow = (size_t) row % std::max<size_t> (1, rows.size());
         if (juce::isPositiveAndBelow (circularRow, rows.size()))
             return rows[circularRow].get();
 
@@ -422,9 +422,9 @@ public:
             const auto lastIndex = last - owner.itemHeightSum.begin();
 
             const auto previousLastIndex = juce::jmax (0, static_cast<int> (lastIndex - 1));
-            lastWholeIndex = owner.itemHeightSum.at (previousLastIndex) <= y + getMaximumVisibleHeight() ? previousLastIndex : static_cast<int> (lastIndex);
+            lastWholeIndex = owner.itemHeightSum.at ((size_t) previousLastIndex) <= y + getMaximumVisibleHeight() ? previousLastIndex : static_cast<int> (lastIndex);
 
-            const size_t numNeeded = std::min (owner.totalItems, 2 + static_cast<int> (lastIndex - firstWholeIndex));
+            const size_t numNeeded = static_cast<size_t> (std::min (owner.totalItems, 2 + static_cast<int> (lastIndex - firstWholeIndex)));
             rows.resize (std::min (numNeeded, rows.size()));
 
             while (numNeeded > rows.size())
@@ -433,10 +433,9 @@ public:
                 content.addAndMakeVisible (rows.back().get());
             }
 
-            for (int i = 0; i < numNeeded; ++i)
+            for (size_t i = 0; i < numNeeded; ++i)
             {
-                const int row = i + firstIndex;
-
+                const auto row = static_cast<int> (i) + firstIndex;
                 if (auto* rowComp = getComponentForRow (row))
                 {
                     auto height = owner.getRowHeight (row);
@@ -461,10 +460,10 @@ public:
         else if (row >= owner.totalItems)
             return owner.itemHeightSum.back() + owner.getDefaultRowHeight() * (1 + row - owner.totalItems);
         else
-            return owner.itemHeightSum[row - 1];
+            return owner.itemHeightSum[static_cast<size_t> (row - 1)];
     }
 
-    void selectRow (const int row, const int rowH, const bool dontScroll, const int lastSelectedRow, const int totalRows, const bool isMouseClick)
+    void selectRow (const int row, const int /*rowH*/, const bool dontScroll, const int lastSelectedRow, const int totalRows, const bool isMouseClick)
     {
         hasUpdated = false;
 
@@ -486,7 +485,8 @@ public:
             else
             {
                 auto bottom = getViewPositionY() + getMaximumVisibleHeight();
-                setViewPosition (getViewPositionX(), getViewPositionY() + (owner.itemHeightSum.at (row) - bottom));
+                jassert (row >= 0);
+                setViewPosition (getViewPositionX(), getViewPositionY() + (owner.itemHeightSum.at ((size_t) row) - bottom));
             }
         }
 
@@ -496,6 +496,7 @@ public:
 
     void scrollToEnsureRowIsOnscreen (const int row)
     {
+        jassert (row >= 0);
         if (row < firstWholeIndex)
         {
             setViewPosition (getViewPositionX(), getRowY (row));
@@ -504,7 +505,7 @@ public:
         {
             auto bottom = getViewPositionY() + getMaximumVisibleHeight();
             setViewPosition (getViewPositionX(),
-                             std::max<int> (0, getViewPositionY() + (owner.itemHeightSum.at (row + 1) - bottom)));
+                             std::max<int> (0, getViewPositionY() + (owner.itemHeightSum.at (size_t (row) + 1) - bottom)));
         }
     }
 
@@ -1084,8 +1085,8 @@ int ListBox::getRowHeight (const int rowNumber) const noexcept
     if (model == nullptr || rowNumber >= totalItems)
         return getDefaultRowHeight();
 
-    auto rowHeight = model->getRowHeight (rowNumber);
-    return rowHeight > 0 ? rowHeight : getDefaultRowHeight();
+    const auto heightForRow = model->getRowHeight (rowNumber);
+    return heightForRow > 0 ? heightForRow : getDefaultRowHeight();
 }
 
 int ListBox::getNumRowsOnScreen() const noexcept
@@ -1298,7 +1299,7 @@ juce::Component* ListBoxModel::refreshComponentForRow (int, bool, [[maybe_unused
     return nullptr;
 }
 
-int ListBoxModel::getRowHeight (int rowNumber) const
+int ListBoxModel::getRowHeight (int /*rowNumber*/) const
 {
     return -1;
 }

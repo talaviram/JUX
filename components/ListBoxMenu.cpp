@@ -198,12 +198,12 @@ int ListBoxMenu::getRowHeight (const int rowNumber) const
 {
     if (currentRoot != nullptr)
     {
-        if (rowNumber >= currentRoot->subMenu->size())
+        if (rowNumber >= (int) currentRoot->subMenu->size())
         {
             jassertfalse;
             return list.getDefaultRowHeight();
         }
-        auto root = currentRoot->subMenu->at (rowNumber);
+        auto root = currentRoot->subMenu->at (static_cast<size_t> (rowNumber));
         if (root.customComponent)
         {
             int width = 0;
@@ -259,7 +259,7 @@ void ListBoxMenu::animateAndClose (const bool removeComponent)
         onMenuClose();
 }
 
-void ListBoxMenu::paintListBoxItem (int rowNumber, Graphics& g, int width, int height, bool rowIsSelected)
+void ListBoxMenu::paintListBoxItem (int /*rowNumber*/, Graphics&, int /*width*/, int /*height*/, bool /*rowIsSelected*/)
 {
     // we use custom component to capture mouse events
 }
@@ -268,10 +268,10 @@ juce::Component* ListBoxMenu::getCustomComponentIfValid (int rowNumber)
 {
     if (currentRoot == nullptr || currentRoot->subMenu == nullptr)
         return nullptr;
-    if (rowNumber >= currentRoot->subMenu->size())
+    if (rowNumber >= (int) currentRoot->subMenu->size())
         return nullptr;
-
-    return (*currentRoot->subMenu)[rowNumber].customComponent.get();
+    jassert (rowNumber >= 0);
+    return (*currentRoot->subMenu)[(size_t) rowNumber].customComponent.get();
 }
 
 Component* ListBoxMenu::refreshComponentForRow (int rowNumber, bool isRowSelected, Component* existingComponentToUpdate)
@@ -361,7 +361,8 @@ void ListBoxMenu::listBoxItemClicked (int row, const bool isSecondaryClick)
     if (onSecondaryClick != nullptr && isSecondaryClick)
         return;
 
-    auto* item = &(*currentRoot->subMenu)[row];
+    jassert (row >= 0);
+    auto* item = &(*currentRoot->subMenu)[static_cast<size_t> (row)];
     if (item && ! item->isEnabled)
         return;
 
@@ -541,14 +542,14 @@ std::unique_ptr<ListBoxMenu::Item> ListBoxMenu::convertPopupItem (const PopupMen
 
 std::unique_ptr<List> ListBoxMenu::convertPopupMenuToList (const PopupMenu& source, ListBoxMenu::Item* parent)
 {
-    auto list = std::make_unique<List>();
+    auto popupAsList = std::make_unique<List>();
     PopupMenu::MenuItemIterator it (source);
     while (it.next())
     {
         const auto& other = it.getItem();
-        list->push_back (*convertPopupItem (other, parent));
+        popupAsList->push_back (*convertPopupItem (other, parent));
     }
-    return list;
+    return popupAsList;
 }
 
 ListBoxMenu::ListMenuToolbar* ListBoxMenu::getToolbar()
@@ -606,7 +607,7 @@ bool ListBoxMenu::BackButton::getIsNameVisible() const
     return isNameVisible;
 }
 
-void ListBoxMenu::BackButton::paintButton (Graphics& g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
+void ListBoxMenu::BackButton::paintButton (Graphics& g, bool shouldDrawButtonAsHighlighted, bool /*shouldDrawButtonAsDown*/)
 {
     auto bounds = getLocalBounds();
     auto arrow = bounds.removeFromLeft (bounds.getHeight()).toFloat();
@@ -635,26 +636,26 @@ juce::Rectangle<int> ListBoxMenu::getSelectedBounds() const
     return list.getRowPosition (row, true);
 }
 
-ListBoxMenu::RowComponent::RowComponent (ListBoxMenu& owner) : owner (owner)
+ListBoxMenu::RowComponent::RowComponent (ListBoxMenu& rowOwner) : owner (rowOwner)
 {
 }
 
 juce::AccessibilityActions ListBoxMenu::RowComponent::getItemAccessibilityActions()
 {
-    auto& parent = owner;
-    auto& list = owner.list;
+    auto& accessibleParent = owner;
+    auto& accessibleList = owner.list;
     auto row = rowNumber;
 
-    auto onFocus = [row, &list]
+    auto onFocus = [row, &accessibleList]
     {
-        list.scrollToEnsureRowIsOnscreen (row);
-        list.selectRow (row);
+        accessibleList.scrollToEnsureRowIsOnscreen (row);
+        accessibleList.selectRow (row);
     };
 
-    auto onPressOrToggle = [row, &parent, onFocus]
+    auto onPressOrToggle = [row, &accessibleParent, onFocus]
     {
         onFocus();
-        parent.listBoxItemClicked (row, false);
+        accessibleParent.listBoxItemClicked (row, false);
     };
 
     return juce::AccessibilityActions().addAction (juce::AccessibilityActionType::focus, std::move (onFocus)).addAction (juce::AccessibilityActionType::press, onPressOrToggle).addAction (juce::AccessibilityActionType::toggle, onPressOrToggle);
@@ -676,7 +677,8 @@ public:
     {
         if (auto* m = rowComponent.parent->currentRoot->subMenu.get())
         {
-            return (*m)[rowComponent.rowNumber].text;
+            jassert (rowComponent.rowNumber >= 0);
+            return (*m)[static_cast<size_t> (rowComponent.rowNumber)].text;
         }
 
         return {};
@@ -691,7 +693,8 @@ public:
         auto state = AccessibilityHandler::getCurrentState().withAccessibleOffscreen();
         if (auto* m = rowComponent.parent->currentRoot->subMenu.get())
         {
-            auto& item = (*m)[rowComponent.rowNumber];
+            jassert (rowComponent.rowNumber >= 0);
+            auto& item = (*m)[static_cast<size_t> (rowComponent.rowNumber)];
             if (item.isEnabled)
             {
                 state = state.withSelectable();
@@ -733,7 +736,8 @@ std::unique_ptr<juce::AccessibilityHandler> ListBoxMenu::RowComponent::createAcc
 
 void ListBoxMenu::RowComponent::paint (juce::Graphics& g)
 {
-    auto& item = (*parent->currentRoot->subMenu)[rowNumber];
+    jassert (rowNumber >= 0);
+    auto& item = (*parent->currentRoot->subMenu)[static_cast<size_t> (rowNumber)];
     if (item.customComponent == nullptr)
     {
         if (item.isSectionHeader)
@@ -773,8 +777,9 @@ void ListBoxMenu::RowComponent::mouseUp (const juce::MouseEvent& e)
         else if (parent->getCurrentRootItem() != nullptr)
         {
             parent->lastSelectedRow = rowNumber;
+            jassert (rowNumber >= 0);
             if (isSecondary && parent->onSecondaryClick == nullptr)
-                parent->onSecondaryClick (parent->getCurrentRootItem()->subMenu->at (rowNumber));
+                parent->onSecondaryClick (parent->getCurrentRootItem()->subMenu->at (static_cast<size_t> (rowNumber)));
             isSecondary = false;
             repaint();
         }
