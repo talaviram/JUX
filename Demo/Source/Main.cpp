@@ -27,7 +27,7 @@
 */
 
 #include "MainComponent.h"
-#include <JuceHeader.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 
 //==============================================================================
 class DemoApplication : public juce::JUCEApplication
@@ -36,8 +36,8 @@ public:
     //==============================================================================
     DemoApplication() {}
 
-    const juce::String getApplicationName() override { return ProjectInfo::projectName; }
-    const juce::String getApplicationVersion() override { return ProjectInfo::versionString; }
+    const juce::String getApplicationName() override { return "JUX Demo"; }
+    const juce::String getApplicationVersion() override { return "0.0"; }
     bool moreThanOneInstanceAllowed() override { return true; }
 
     //==============================================================================
