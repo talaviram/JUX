@@ -136,6 +136,9 @@ public:
     MenuItem&& setCustomComponent (juce::ReferenceCountedObjectPtr<juce::PopupMenu::CustomComponent> customComponent) && noexcept;
     /** Sets the image property (and returns a reference to this item to allow chaining). */
     MenuItem&& setImage (std::unique_ptr<juce::Drawable>) && noexcept;
+
+    static std::unique_ptr<MenuItem::List> convertPopupMenuToList (const juce::PopupMenu& source, MenuItem* parent = nullptr);
+    static std::unique_ptr<MenuItem> convertPopupItem (const juce::PopupMenu::Item&, MenuItem* parent = nullptr);
 };
 
 } // namespace jux

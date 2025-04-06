@@ -276,7 +276,7 @@ void ListBoxMenu::setMenuFromPopup (juce::PopupMenu&& menu, const juce::String r
 {
     rootMenu.reset (new Item());
     rootMenu->text = rootMenuName;
-    rootMenu->subMenu = convertPopupMenuToList (menu, rootMenu.get());
+    rootMenu->subMenu = MenuItem::convertPopupMenuToList (menu, rootMenu.get());
     setCurrentRoot (rootMenu.get(), true, false);
     list.updateContent();
     list.setDefaultRowHeight (list.getDefaultRowHeight());
@@ -386,41 +386,6 @@ void ListBoxMenu::changeListenerCallback (ChangeBroadcaster* src)
         Desktop::getInstance().getAnimator().removeChangeListener (this);
         repaint();
     }
-}
-
-std::unique_ptr<ListBoxMenu::Item> ListBoxMenu::convertPopupItem (const PopupMenu::Item& other, ListBoxMenu::Item* parent)
-{
-    auto dest = std::make_unique<ListBoxMenu::Item>();
-    dest->text = other.text;
-    dest->itemID = other.itemID;
-    dest->action = other.action;
-    if (other.subMenu)
-        dest->subMenu = convertPopupMenuToList (*other.subMenu, dest.get());
-
-    dest->parentItem = parent;
-    dest->image = other.image != nullptr ? other.image->createCopy() : nullptr;
-    dest->customComponent = other.customComponent;
-    dest->customCallback = other.customCallback;
-    dest->commandManager = other.commandManager;
-    dest->shortcutKeyDescription = other.shortcutKeyDescription;
-    dest->colour = other.colour;
-    dest->isEnabled = other.isEnabled;
-    dest->isTicked = other.isTicked;
-    dest->isSeparator = other.isSeparator;
-    dest->isSectionHeader = other.isSectionHeader;
-    return dest;
-}
-
-std::unique_ptr<List> ListBoxMenu::convertPopupMenuToList (const PopupMenu& source, ListBoxMenu::Item* parent)
-{
-    auto popupAsList = std::make_unique<List>();
-    PopupMenu::MenuItemIterator it (source);
-    while (it.next())
-    {
-        const auto& other = it.getItem();
-        popupAsList->push_back (*convertPopupItem (other, parent));
-    }
-    return popupAsList;
 }
 
 ListBoxMenu::ListMenuToolbar* ListBoxMenu::getToolbar()

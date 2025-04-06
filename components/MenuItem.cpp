@@ -162,4 +162,39 @@ MenuItem&& MenuItem::setImage (std::unique_ptr<Drawable> newImage) && noexcept
     return std::move (*this);
 }
 
+std::unique_ptr<MenuItem> MenuItem::convertPopupItem (const PopupMenu::Item& other, MenuItem* parent)
+{
+    auto dest = std::make_unique<MenuItem>();
+    dest->text = other.text;
+    dest->itemID = other.itemID;
+    dest->action = other.action;
+    if (other.subMenu)
+        dest->subMenu = convertPopupMenuToList (*other.subMenu, dest.get());
+
+    dest->parentItem = parent;
+    dest->image = other.image != nullptr ? other.image->createCopy() : nullptr;
+    dest->customComponent = other.customComponent;
+    dest->customCallback = other.customCallback;
+    dest->commandManager = other.commandManager;
+    dest->shortcutKeyDescription = other.shortcutKeyDescription;
+    dest->colour = other.colour;
+    dest->isEnabled = other.isEnabled;
+    dest->isTicked = other.isTicked;
+    dest->isSeparator = other.isSeparator;
+    dest->isSectionHeader = other.isSectionHeader;
+    return dest;
+}
+
+std::unique_ptr<MenuItem::List> MenuItem::convertPopupMenuToList (const PopupMenu& source, MenuItem* parent)
+{
+    auto popupAsList = std::make_unique<List>();
+    PopupMenu::MenuItemIterator it (source);
+    while (it.next())
+    {
+        const auto& other = it.getItem();
+        popupAsList->push_back (*convertPopupItem (other, parent));
+    }
+    return popupAsList;
+}
+
 } // namespace jux
