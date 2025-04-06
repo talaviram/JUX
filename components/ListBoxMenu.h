@@ -30,6 +30,7 @@
 
 #include "../utils.h"
 #include "ListBox.h"
+#include "MenuItem.h"
 
 namespace jux
 {
@@ -49,7 +50,7 @@ namespace jux
 class ListBoxMenu : public juce::Component, private jux::ListBoxModel, private juce::ChangeListener
 {
 public:
-    struct Item;
+    using Item = jux::MenuItem;
 
     ListBoxMenu();
 
@@ -98,113 +99,6 @@ public:
     void deleteKeyPressed (int lastRowSelected) override;
 
     juce::Rectangle<int> getSelectedBounds() const;
-
-    struct Item
-    {
-        typedef std::vector<Item> List;
-        /** Creates a null item.
-             You'll need to set some fields after creating an Item before you
-             can add it to a PopupMenu
-         */
-        Item();
-
-        /** Creates an item with the given text.
-             This constructor also initialises the itemID to -1, which makes it suitable for
-             creating lambda-based item actions.
-         */
-        Item (juce::String text);
-
-        Item (const Item&);
-        Item& operator= (const Item&);
-        Item (Item&&);
-        Item& operator= (Item&&);
-
-        /** The menu item's name. */
-        juce::String text;
-
-        /** The menu item's ID.
-             This must not be 0 if you want the item to be triggerable, but if you're attaching
-             an action callback to the item, you can set the itemID to -1 to indicate that it
-             isn't actively needed.
-         */
-        int itemID = 0;
-
-        /** An optional function which should be invoked when this menu item is triggered. */
-        std::function<void()> action;
-
-        /** A parent-item, or nullptr if there isn't one. */
-        Item* parentItem = nullptr;
-
-        /** A sub-menu, or nullptr if there isn't one. */
-        std::unique_ptr<List> subMenu;
-
-        /** A drawable to use as an icon, or nullptr if there isn't one. */
-        std::unique_ptr<juce::Drawable> image;
-
-        /** A custom component for the item to display, or nullptr if there isn't one. */
-        juce::ReferenceCountedObjectPtr<juce::PopupMenu::CustomComponent> customComponent = nullptr;
-
-        /** A custom callback for the item to use, or nullptr if there isn't one. */
-        juce::ReferenceCountedObjectPtr<juce::PopupMenu::CustomCallback> customCallback = nullptr;
-
-        /** A command manager to use to automatically invoke the command, or nullptr if none is specified. */
-        juce::ApplicationCommandManager* commandManager = nullptr;
-
-        /** An optional string describing the shortcut key for this item.
-             This is only used for displaying at the right-hand edge of a menu item - the
-             menu won't attempt to actually catch or process the key. If you supply a
-             commandManager parameter then the menu will attempt to fill-in this field
-             automatically.
-         */
-        juce::String shortcutKeyDescription;
-
-        /** A colour to use to draw the menu text.
-             By default this is transparent black, which means that the LookAndFeel should choose the colour.
-         */
-        juce::Colour colour;
-
-        /** True if this menu item is enabled. */
-        bool isEnabled = true;
-
-        /** True if this menu item should have a tick mark next to it. */
-        bool isTicked = false;
-
-        /** True if this menu item is a separator line. */
-        bool isSeparator = false;
-
-        /** True if this menu item is a section header. */
-        bool isSectionHeader = false;
-
-        /** Sets the isTicked flag (and returns a reference to this item to allow chaining). */
-        Item& setTicked (bool shouldBeTicked = true) & noexcept;
-        /** Sets the isEnabled flag (and returns a reference to this item to allow chaining). */
-        Item& setEnabled (bool shouldBeEnabled) & noexcept;
-        /** Sets the action property (and returns a reference to this item to allow chaining). */
-        Item& setAction (std::function<void()> action) & noexcept;
-        /** Sets the itemID property (and returns a reference to this item to allow chaining). */
-        Item& setID (int newID) & noexcept;
-        /** Sets the colour property (and returns a reference to this item to allow chaining). */
-        Item& setColour (juce::Colour) & noexcept;
-        /** Sets the customComponent property (and returns a reference to this item to allow chaining). */
-        Item& setCustomComponent (juce::ReferenceCountedObjectPtr<juce::PopupMenu::CustomComponent> customComponent) & noexcept;
-        /** Sets the image property (and returns a reference to this item to allow chaining). */
-        Item& setImage (std::unique_ptr<juce::Drawable>) & noexcept;
-
-        /** Sets the isTicked flag (and returns a reference to this item to allow chaining). */
-        Item&& setTicked (bool shouldBeTicked = true) && noexcept;
-        /** Sets the isEnabled flag (and returns a reference to this item to allow chaining). */
-        Item&& setEnabled (bool shouldBeEnabled) && noexcept;
-        /** Sets the action property (and returns a reference to this item to allow chaining). */
-        Item&& setAction (std::function<void()> action) && noexcept;
-        /** Sets the itemID property (and returns a reference to this item to allow chaining). */
-        Item&& setID (int newID) && noexcept;
-        /** Sets the colour property (and returns a reference to this item to allow chaining). */
-        Item&& setColour (juce::Colour) && noexcept;
-        /** Sets the customComponent property (and returns a reference to this item to allow chaining). */
-        Item&& setCustomComponent (juce::ReferenceCountedObjectPtr<juce::PopupMenu::CustomComponent> customComponent) && noexcept;
-        /** Sets the image property (and returns a reference to this item to allow chaining). */
-        Item&& setImage (std::unique_ptr<juce::Drawable>) && noexcept;
-    };
 
     /** The current root item.
         This allows updating states like changing isTicked/menu like interfaces.

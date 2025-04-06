@@ -22,6 +22,8 @@ target_sources(Demo PRIVATE
     ../components/ListBox.h
     ../components/ListBoxMenu.cpp
     ../components/ListBoxMenu.h
+    ../components/MenuItem.cpp
+    ../components/MenuItem.h
     ../components/SwitchButton.h
     ../components/TabBar.cpp
     ../components/TabBar.h
